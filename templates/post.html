@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+<main role="main" class="container">
+    <div class="row">
+            <div class="col-md-3 mb-3 mt-1">
+                {% include "includes/profile_card.html" %}
+            </div>
+
+            <div class="col-md-9">                
+                <!-- Начало блока с отдельным постом --> 
+                {% include "includes/post_item.html" %}
+                <!-- Конец блока с отдельным постом -->
+                {% include "includes/comments.html" %}
+     </div>
+    </div>
+</main>
+{% endblock %} 

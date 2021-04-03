@@ -7,7 +7,6 @@ urlpatterns = [
     path('group/<slug:slug>/', views.group_posts, name='group_posts'),
     path('follow/', views.follow_index, name='follow_index'),
     path('new/', views.post_new, name='post_new'),
-    path('justpage/', views.JustStaticPage.as_view()),
     path('<str:username>/', views.profile, name='profile'),
     path('<str:username>/<int:post_id>/', views.post_view, name='post'),
     path('<str:username>/<int:post_id>/edit/',

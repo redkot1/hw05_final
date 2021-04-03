@@ -212,13 +212,16 @@ class PostsPagesTests(TestCase):
         response_2 = self.authorized_client.get(reverse('index'))
         self.assertEqual(response_1.content, response_2.content)
 
-    def test_follow_unfollow_user(self):
-        """Проверка системы подписок и отписок."""
+    def test_follow_user(self):
+        """Проверка системы подписок."""
         self.authorized_client.get(
             reverse('profile_follow',
                     kwargs={'username': self.user2.username, }))
         follower = Follow.objects.filter(user=self.user).count()
         self.assertEqual(1, follower, 'Не работает подписка!')
+
+    def test_unfollow_user(self):
+        """Проверка системы отписок."""
         self.authorized_client.get(
             reverse('profile_unfollow',
                     kwargs={'username': self.user2.username, }))

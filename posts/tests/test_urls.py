@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
+from http import HTTPStatus
 
 from posts.models import Group, Post
 
@@ -41,7 +42,6 @@ class PostsURLTests(TestCase):
             '/': 'index.html',
             '/new/': 'post_new.html',
             f'/group/{self.group.slug}/': 'group.html',
-            '/justpage/': 'just_page.html',
             f'/{self.user.username}/': 'profile.html',
             f'/{self.user.username}/{self.post.id}/': 'post.html',
             f'/{self.user.username}/{self.post.id}/edit/': 'post_new.html',
@@ -50,7 +50,7 @@ class PostsURLTests(TestCase):
             with self.subTest():
                 response = self.authorized_client.get(reverse_name)
                 self.assertTemplateUsed(response, template)
-                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_urls_guest_response_private(self):
         """Проверка редиректа неавторизованного клиента"""
@@ -61,14 +61,13 @@ class PostsURLTests(TestCase):
         for reverse_name, template in templates_url_names_private.items():
             with self.subTest():
                 response = self.guest_client.get(reverse_name)
-                self.assertEqual(response.status_code, 302)
+                self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
     def test_urls_guest_response_public(self):
         """Проверка доступа неавторизованного клиента"""
         templates_url_names_public = {
             '/': 'index.html',
             f'/group/{self.group.slug}/': 'group.html',
-            '/justpage/': 'just_page.html',
             f'/{self.user.username}/': 'profile.html',
             f'/{self.user.username}/{self.post.id}/': 'post.html',
         }
@@ -76,21 +75,21 @@ class PostsURLTests(TestCase):
             with self.subTest():
                 response = self.guest_client.get(reverse_name)
                 self.assertTemplateUsed(response, template)
-                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_urls_noauthor_response_edit(self):
         """Редактирование поста авторизованным клиентом(не автором)"""
         response = self.authorized_client2.get(
             f'/{self.user.username}/{self.post.id}/edit/')
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
     def test_urls_404_response(self):
         """Проверка на получение 404 при неверном адресе"""
         response = self.guest_client.get('/missing/')
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
 
     def test_urls_guest_response_comment(self):
         """Доступ комментирования поста неавторизованным клиентом"""
         response = self.guest_client.get(
             f'/{self.user.username}/{self.post.id}/comment/')
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)

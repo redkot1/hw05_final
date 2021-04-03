@@ -1,7 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
-from django.views.generic.base import TemplateView
 from django.urls import reverse
 
 from .forms import PostForm, CommentForm
@@ -46,20 +45,9 @@ def post_new(request):
     return redirect('index')
 
 
-class JustStaticPage(TemplateView):
-    template_name = 'just_page.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['just_title'] = 'Очень простая страница'
-        text = 'На создание этой страницы у меня ушло пять минут! Ай да я.'
-        context['just_text'] = text
-        return context
-
-
 def profile(request, username):
     user = get_object_or_404(User, username=username)
-    user_posts = Post.objects.filter(author=user)
+    user_posts = user.posts.all()
     post_count = user.posts.count()
     paginator = Paginator(user_posts, settings.PAR_PAGE)
     page_number = request.GET.get('page')
@@ -79,11 +67,10 @@ def profile(request, username):
 
 
 def post_view(request, username, post_id):
-    user = get_object_or_404(User, username=username)
     post = get_object_or_404(Post, id=post_id, author__username=username)
-    post_count = Post.objects.filter(author__username=username).count()
-    follow_count = Follow.objects.filter(author=user).count()
-    following_count = Follow.objects.filter(user=user).count()
+    post_count = post.author.posts.count()
+    follow_count = post.author.follower.all().count()
+    following_count = post.author.following.all().count()
     form = CommentForm()
     comments = post.comments.all()
     context = {'post': post,
@@ -133,7 +120,7 @@ def server_error(request):
 
 @login_required
 def add_comment(request, post_id, username):
-    post = get_object_or_404(Post, id=post_id)
+    post = get_object_or_404(Post, id=post_id, author__username=username)
     form = CommentForm(request.POST or None)
     if form.is_valid():
         comment = form.save(commit=False)
@@ -160,10 +147,8 @@ def follow_index(request):
 @login_required
 def profile_follow(request, username):
     author = get_object_or_404(User, username=username)
-    following = request.user.is_authenticated and Follow.objects.filter(
-        user=request.user, author=author).exists()
-    if author != request.user and not following:
-        Follow.objects.create(user=request.user, author=author,)
+    if author != request.user:
+        Follow.objects.get_or_create(user=request.user, author=author,)
     return redirect('profile', username=username)
 
 

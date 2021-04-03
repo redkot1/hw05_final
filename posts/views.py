@@ -69,8 +69,8 @@ def profile(request, username):
 def post_view(request, username, post_id):
     post = get_object_or_404(Post, id=post_id, author__username=username)
     post_count = post.author.posts.count()
-    follow_count = post.author.follower.all().count()
-    following_count = post.author.following.all().count()
+    follow_count = post.author.following.all().count()
+    following_count = post.author.follower.all().count()
     form = CommentForm()
     comments = post.comments.all()
     context = {'post': post,
